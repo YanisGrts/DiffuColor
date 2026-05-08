@@ -15,7 +15,7 @@ LR         = 1e-4
 EPOCHS     = 30
 DEVICE     = "cuda" if torch.cuda.is_available() else "cpu"
 
-wandb.init(
+run = wandb.init(
     entity="DeepColo",
     project="Unet",
     config={"batch_size": BATCH_SIZE, "lr": LR, "epochs": EPOCHS},
@@ -27,7 +27,7 @@ wandb.init(
 train_dataset = COCOColorizationDataset("../ds/coco/train2017")
 val_dataset   = COCOColorizationDataset("../ds/coco/val2017")
 
-CHECKPOINT_DIR = "checkpoints"
+CHECKPOINT_DIR = f"checkpoints/{run.id}"
 os.makedirs(CHECKPOINT_DIR, exist_ok=True)
 
 train_loader = DataLoader(train_dataset, batch_size=BATCH_SIZE, shuffle=True,  num_workers=4, pin_memory=True)

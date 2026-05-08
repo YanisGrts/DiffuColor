@@ -13,7 +13,7 @@ def process_image(filename):
             # Ouvrir, redimensionner et sauvegarder
             with Image.open(in_path) as img:
                 # LANCZOS offre la meilleure qualité pour la réduction d'image
-                img_resized = img.resize(target_size, Image.Resampling.LANCZOS)
+                img_resized = img.resize((128, 128), Image.Resampling.LANCZOS)
                 img_resized.save(out_path, format='JPEG', quality=90)
         except Exception as e:
             print(f"Erreur sur l'image {filename}: {e}")
