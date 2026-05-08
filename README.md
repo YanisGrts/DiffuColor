@@ -1,7 +1,3 @@
-Here is a `README.md` file tailored to your project.
-
----
-
 # DiffuColor: Image Colorization
 
 DiffuColor is a deep learning project focused on image colorization. It converts grayscale images (L channel in LAB color space) into fully colored images by predicting the missing color channels (a and b).
