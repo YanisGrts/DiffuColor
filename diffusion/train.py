@@ -42,6 +42,7 @@ def main():
         config={"batch_size": BATCH_SIZE, "lr": LR, "epochs": EPOCHS},
         name="DDPM",
         resume="allow",   # allows attaching to a previous run when using --checkpoint
+        save_code =True,
     )
 
     # ── Data ───────────────────────────────────────────────────────────────────
