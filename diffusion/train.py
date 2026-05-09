@@ -69,9 +69,6 @@ def main():
     model     = UNetDDPM().to(DEVICE)
     optimizer = torch.optim.Adam(model.parameters(), lr=LR)
 
-    # Cosine LR schedule — decays smoothly to lr/10 over the run
-    scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=EPOCHS + start_epoch, eta_min=LR / 10)
-
     alpha_bars_d = alpha_bars.to(DEVICE)
     betas_d      = betas.to(DEVICE)
     alphas_d     = alphas.to(DEVICE)
@@ -101,9 +98,11 @@ def main():
                 print("[resume] Could not infer epoch from filename; starting epoch counter at 0")
 
         # Fast-forward the LR scheduler to match where we are
+        scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=start_epoch + EPOCHS, eta_min=LR / 10)
         for _ in range(start_epoch):
             scheduler.step()
-
+    else:
+        scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=EPOCHS, eta_min=LR / 10)
     wandb.watch(model, log="gradients", log_freq=100)
 
     # ── Training loop ──────────────────────────────────────────────────────────

@@ -21,5 +21,5 @@ conda activate /home/ygeurts/anaconda3/envs/deep_learning
 cd /home/ygeurts/DiffuColor/diffusion
 
 # 4. Run your Pythonscript
-python train.py --epochs 100 --lr 1e_4 --batch_size 16 --drop_prob 0.15 --guidance_scale 3.0
+python train.py --epochs 100 --lr 1e-4 --batch_size 16 --drop_prob 0.15 --guidance_scale 3.0
 
