@@ -14,10 +14,20 @@ def q_sample(ab, t, noise, alpha_bars):
     noise_t = (1 - alpha_bars[t]).sqrt().view(-1,1,1,1)
     return ab_t * ab + noise_t * noise
 
-def p_sample(model, ab_noisy, L, t, alpha_bars, betas, alphas):
+def p_sample(model, ab_noisy, L, t, alpha_bars, betas, alphas,  guidance_scale=1.0):
     """One denoising step (reverse process)."""
     with torch.no_grad():
-        pred_noise = model(ab_noisy, L, t)
+        pred_noise_cond = model(ab_noisy, L, t)
+        if guidance_scale != 1.0:
+            # ── Unconditional prediction (L zeroed out) ────────────────────────
+            L_null = torch.zeros_like(L)
+            pred_noise_uncond = model(ab_noisy, L_null, t)
+ 
+            # CFG blend: push prediction away from unconditional toward conditional
+            pred_noise = pred_noise_uncond + guidance_scale * (pred_noise_cond - pred_noise_uncond)
+        else:
+            pred_noise = pred_noise_cond
+        
         device = ab_noisy.device
         b      = betas[t].view(-1,1,1,1)
         a      = alphas[t].view(-1,1,1,1)

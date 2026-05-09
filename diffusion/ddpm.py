@@ -55,19 +55,31 @@ class UNetDDPM(nn.Module):
 
         self.head = nn.Conv2d(64, 2, 1)  # predict 2-channel noise, no Tanh
 
-    def forward(self, ab_noisy, L, t):
+    def forward(self, ab_noisy, L, t, drop_condition=None):
+        """
+        drop_condition: optional bool tensor of shape (B,). When True for a sample,
+                        the L condition is zeroed out → unconditional forward pass.
+                        If None, no dropping is applied (pure conditional, used at inference).
+        """
+        if drop_condition is not None:
+            # Zero out L for samples where drop_condition is True
+            # drop_condition shape: (B,) → reshape to (B,1,1,1) for broadcasting
+            mask = drop_condition.view(-1, 1, 1, 1).float()
+            L = L * (1.0 - mask)
+ 
         x   = torch.cat([ab_noisy, L], dim=1)  # (B, 3, 128, 128)
         emb = self.time_mlp(t)                  # (B, t_emb_dim)
-
+ 
         e1 = self.enc1(x,  emb)
         e2 = self.enc2(self.pool(e1), emb)
         e3 = self.enc3(self.pool(e2), emb)
         e4 = self.enc4(self.pool(e3), emb)
         b  = self.bottleneck(self.pool(e4), emb)
-
+ 
         d4 = self.dec4(torch.cat([self.up4(b),  e4], dim=1), emb)
         d3 = self.dec3(torch.cat([self.up3(d4), e3], dim=1), emb)
         d2 = self.dec2(torch.cat([self.up2(d3), e2], dim=1), emb)
         d1 = self.dec1(torch.cat([self.up1(d2), e1], dim=1), emb)
-
-        return self.head(d1)                       # (B,   2,128,128)
+ 
+        return self.head(d1)                       # (B, 2, 128, 128)
+ 
