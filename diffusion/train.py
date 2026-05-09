@@ -9,6 +9,7 @@ import os
 import argparse
 from cocoloader import COCOColorizationDataset
 from noisescheduler import alpha_bars, q_sample, T, p_sample, betas, alphas
+from torchvision import transforms
 
 
 # ── CLI ────────────────────────────────────────────────────────────────────────
@@ -51,7 +52,11 @@ def main():
     )
 
     # ── Data ───────────────────────────────────────────────────────────────────
-    train_dataset = COCOColorizationDataset("../ds/coco/train2017")
+    transform = transforms.Compose([
+        transforms.RandomHorizontalFlip(),
+        transforms.RandomCrop(128, pad_if_needed=True),
+    ])
+    train_dataset = COCOColorizationDataset("../ds/coco/train2017", transform=transform)
     val_dataset   = COCOColorizationDataset("../ds/coco/val2017")
 
     CHECKPOINT_DIR = f"checkpoints/{run.id}"
@@ -65,7 +70,7 @@ def main():
     optimizer = torch.optim.Adam(model.parameters(), lr=LR)
 
     # Cosine LR schedule — decays smoothly to lr/10 over the run
-    scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=EPOCHS, eta_min=LR / 10)
+    scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=EPOCHS + start_epoch, eta_min=LR / 10)
 
     alpha_bars_d = alpha_bars.to(DEVICE)
     betas_d      = betas.to(DEVICE)
@@ -121,6 +126,7 @@ def main():
 
             optimizer.zero_grad()
             loss.backward()
+            torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
             optimizer.step()
 
             train_loss += loss.item()
