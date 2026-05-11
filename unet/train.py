@@ -12,7 +12,7 @@ from skimage import color
 # --- Config ---
 BATCH_SIZE = 32
 LR         = 1e-4
-EPOCHS     = 30
+EPOCHS     = 100
 DEVICE     = "cuda" if torch.cuda.is_available() else "cpu"
 
 run = wandb.init(
