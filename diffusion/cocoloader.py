@@ -2,21 +2,16 @@ import os
 import torch
 import numpy as np
 from PIL import Image
-from torch.utils.data import Dataset, DataLoader
+from torch.utils.data import Dataset
 from torchvision import transforms
 from skimage import color
-import matplotlib.pyplot as plt
 
 class COCOColorizationDataset(Dataset):
     def __init__(self, image_dir, transform=None):
-        """
-        Args:
-            image_dir (str): Path to the directory containing COCO images.
-            transform (callable, optional): Optional PyTorch transforms for data augmentation.
-        """
         self.image_dir = image_dir
 
-        self.image_names = [f for f in os.listdir(image_dir) if f.lower().endswith(('.png', '.jpg', '.jpeg'))]
+        self.image_names = [f for f in os.listdir(image_dir)
+                            if f.lower().endswith(('.png', '.jpg', '.jpeg'))]
         self.transform = transform
 
     def __len__(self):
@@ -30,7 +25,7 @@ class COCOColorizationDataset(Dataset):
         if self.transform:
             image = self.transform(image)
             if isinstance(image, torch.Tensor):
-                image = transforms.ToPILImage()(image)  # back to PIL for rgb2lab
+                image = transforms.ToPILImage()(image)
         image_np = np.array(image)
 
         lab_image = color.rgb2lab(image_np)
@@ -40,7 +35,6 @@ class COCOColorizationDataset(Dataset):
 
         L_norm = (L / 50.0) - 1.0
         ab_norm = ab / 128.0
-
 
         L_tensor = torch.tensor(L_norm, dtype=torch.float32).unsqueeze(0)
         ab_tensor = torch.tensor(ab_norm, dtype=torch.float32).permute(2, 0, 1)
